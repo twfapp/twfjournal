@@ -2418,7 +2418,7 @@ async function setupPasskey(){
       publicKey: {
         challenge,
         rp: { name: 'TWF Journal' },
-        user: { id: new TextEncoder().encode(currentUser.id), name: settings.name || 'Trader', displayName: settings.name || 'Trader' },
+        user: { id: new TextEncoder().encode('twfj:' + currentUser.id), name: (settings.name || 'Trader') + ' · Journal', displayName: (settings.name || 'Trader') + ' · TWF Journal' },
         pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
         authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' },
         timeout: 60000
@@ -2457,7 +2457,6 @@ async function passkeyLogin(){
     const assertion = await navigator.credentials.get({
       publicKey: {
         challenge,
-        allowCredentials: [{ id: rawId, type: 'public-key', transports: ['internal'] }],
         userVerification: 'required',
         timeout: 60000
       }
@@ -3836,7 +3835,7 @@ body.theme-dark .jtoast{background:var(--bg-soft2);box-shadow:0 10px 40px rgba(0
 <div id="jToasts"></div>
 <script>
 /* v14.8: UPDATES — de app vergelijkt zijn eigen versie met de versie op de server */
-const TWF_JOURNAL_VERSION = 'v14.9';
+const TWF_JOURNAL_VERSION = 'v15.0';
 const JUPD={latest:null,toasted:false,checking:false,last:0};
 function jVerCmp(a,b){ const p=v=>String(v||'').replace(/^v/,'').split('.').map(n=>parseInt(n,10)||0); const x=p(a),y=p(b); for(let i=0;i<Math.max(x.length,y.length);i++){ const d=(x[i]||0)-(y[i]||0); if(d) return d>0?1:-1 } return 0 }
 function jUpdAvailable(){ return !!JUPD.latest && jVerCmp(JUPD.latest,TWF_JOURNAL_VERSION)>0 }
