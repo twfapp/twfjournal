@@ -980,12 +980,6 @@ body.theme-light .olab{background:#fff;box-shadow:0 2px 8px rgba(20,30,60,.15)}
 /* v8.9: beginscherm-app (iOS standalone) — echt schermvullend.
    iOS schuift de pagina onder de doorzichtige statusbalk, maar het viewport blijft even lang;
    daardoor bleef onderin een strook leeg. In de app rekenen we met de volle schermhoogte (lvh). */
-html.pwa,html.pwa body{min-height:100lvh}
-html.pwa #app,html.pwa #session,html.pwa #login,html.pwa .msheet,html.pwa .ov{bottom:calc(100% - 100lvh)!important;height:auto}
-html.pwa .tabbar{bottom:calc(100% - 100lvh)!important}
-html.pwa body.in-app:not(.in-sx) #toasts{bottom:calc(84px + env(safe-area-inset-bottom) + 100% - 100lvh)}
-html.pwa .fab{bottom:calc(84px + env(safe-area-inset-bottom) + 100% - 100lvh)}
-@media (min-width:901px){ html.pwa .fab{bottom:calc(24px + 100% - 100lvh)} }
 
 /* v9.1: inhoud onder iOS 26-glasstrook vandaan, ronde zachte afspeelbalk, strakkere stapeling */
 /* v9.0: telefoon-dock */
@@ -1185,7 +1179,7 @@ body:not(.theme-light) .sxmenu button:hover{background:#262626}
 .trow .ti2{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;overflow:hidden;background:var(--panel2)}
 .trow .ti2 img{width:100%;height:100%;object-fit:cover}
 .trow .ti2.long{background:linear-gradient(145deg,#2f6bff,#1d47c9)}.trow .ti2.short{background:linear-gradient(145deg,#ef5350,#b9312e)}
-.trow .tn b{display:flex;align-items:center;gap:8px;font-size:15px}.trow .tn small{display:block;color:var(--ink3);font-size:12.5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trow .tn{min-width:0}.trow .tn b{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;font-size:15px;min-width:0}.trow .tn small{display:block;color:var(--ink3);font-size:12.5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trow .tm{color:var(--ink3);font-size:12.5px;display:flex;gap:6px;flex-wrap:wrap}
 .trow .tp .rrm{display:none}.trow .tp{text-align:right;font-weight:800;font-size:16px;white-space:nowrap}.trow .tp small{display:block;font-size:12px;color:var(--ink3);font-weight:600}
 .box .trow .tm{display:none}.box .trow .tp .rrm{display:block}.dpill{white-space:nowrap;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:6px;letter-spacing:.03em}
@@ -1351,7 +1345,6 @@ body.theme-light .tvsheet .inp{background:rgba(0,0,0,.04);border-color:rgba(0,0,
 body.theme-light .tvsheet .tvs-foot{border-color:rgba(0,0,0,.06)}
 .addfab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:55;width:56px;height:56px;border-radius:50%;display:none;place-items:center;color:#fff;background:linear-gradient(145deg,var(--lg1,#6d8dff),var(--lg2,#2f57e6));box-shadow:0 10px 28px rgba(47,87,230,.45)}
 @media (max-width:900px){ body.in-app .addfab.on{display:grid} }
-html.pwa .addfab{bottom:calc(84px + env(safe-area-inset-bottom) + 100% - 100lvh)}
 
 </style>
 </head>
@@ -1424,8 +1417,8 @@ html.pwa .addfab{bottom:calc(84px + env(safe-area-inset-bottom) + 100% - 100lvh)
    Zelfde database als v15 (trades, payouts, adjustments, settings,
    storage 'trade-photos') + backtest-sessies uit bt_items.
    ========================================================= */
-const CFG={ SUPABASE_URL:'https://pntyqppxwibvpxqcchoo.supabase.co', SUPABASE_ANON_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBudHlxcHB4d2lidnB4cWNjaG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyOTExNjMsImV4cCI6MjEwMzg2NzE2M30.B0ZoIYSfaw1AG6sQZHQnqcAZ3v_ZQdYfHiHwmT9Us2E', VERSION:'v16.1', BUILD:'2026-11-15b' };
-const TWF_JOURNAL_VERSION = 'v16.1';
+const CFG={ SUPABASE_URL:'https://pntyqppxwibvpxqcchoo.supabase.co', SUPABASE_ANON_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBudHlxcHB4d2lidnB4cWNjaG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyOTExNjMsImV4cCI6MjEwMzg2NzE2M30.B0ZoIYSfaw1AG6sQZHQnqcAZ3v_ZQdYfHiHwmT9Us2E', VERSION:'v16.2', BUILD:'2026-11-15c' };
+const TWF_JOURNAL_VERSION = 'v16.2';
 const BACKTEST_URL='https://twfapp.github.io/twfbacktest/';
 
 /* ---------------- basis ---------------- */
@@ -1714,9 +1707,22 @@ async function loadAll(){ await fetchSettings(); await Promise.all([fetchTrades(
 
 /* ---------------- rekening-context ---------------- */
 function curCcy(){ const A=acct(); return A.ccy }
+/* gelaagde trades: zelfde markt + richting, (bijna) tegelijk gesloten = 1 trade */
+const MERGE_OPTS=[[0,()=>L('Uit','Off')],[15,()=>'15 s'],[60,()=>'1 min'],[300,()=>'5 min'],[900,()=>'15 min']];
+const mergeSec=()=>{ const v=lsGet('twfj_merge'); return v==null?60:+v };
+const _mc=new WeakMap();
+function mergeLayers(list){ const sec=mergeSec(); if(!sec||!list.length) return list; const ck=_mc.get(list); if(ck&&ck.sec===sec&&ck.n===list.length) return ck.out;
+  const srt=list.slice().sort((a,b)=>new Date(a.date)-new Date(b.date)), out=[]; let g=null;
+  const flush=()=>{ if(!g) return; if(g.length===1){ out.push(g[0]); g=null; return }
+    const pnl=g.reduce((s,t)=>s+t.pnl,0), risks=g.map(t=>t.rr?Math.abs(t.pnl/t.rr):null), allR=risks.every(r=>r!=null&&isFinite(r)&&r>0), risk=allR?risks.reduce((a,b)=>a+b,0):0;
+    out.push({ ...g[g.length-1], id:'g:'+g.map(t=>t.id).join(','), layers:g.slice(), pnl:+pnl.toFixed(2), rr:allR&&risk?+(pnl/risk).toFixed(2):null, date:g[g.length-1].date, openTime:g[0].openTime||g[0].date,
+      lots:g.every(t=>t.lots!=null)?+g.reduce((s,t)=>s+t.lots,0).toFixed(2):null, entry:null, exitPrice:g[g.length-1].exitPrice,
+      hadPlan:g.some(t=>t.hadPlan), note:g.map(t=>t.note).filter(Boolean).join('\n'), photos:g.flatMap(t=>t.photos||[]), setup:g.find(t=>t.setup&&!t.mt5)?.setup||g[0].setup, mt5:g.every(t=>t.mt5) }); g=null };
+  srt.forEach(t=>{ if(g){ const l=g[g.length-1]; if(l.pair===t.pair&&l.dir===t.dir&&Math.abs(new Date(t.date)-new Date(l.date))<=sec*1000){ g.push(t); return } flush() } g=[t] }); flush();
+  _mc.set(list,{sec,n:list.length,out}); return out }
 function acct(){
-  if(S.acct.startsWith('bt:')){ const s=D.bt.sessions.find(x=>'bt:'+x.id===S.acct); if(s) return {kind:'bt',id:s.id,name:s.name,sub:(s.type==='propfirm'?'Prop firm':'Backtest')+(s.acctName?' · '+s.acctName:''),ccy:s.ccy,trades:s.trades,payouts:[],adjs:[],capital:s.capital,session:s} }
-  return {kind:'live',id:'live',name:'Live',sub:'MT5'+(SETTINGS.login?' · '+SETTINGS.login:''),ccy:SYM2CODE[SETTINGS.currency]||'EUR',trades:D.trades,payouts:D.payouts,adjs:D.adjs,capital:SETTINGS.capital||0} }
+  if(S.acct.startsWith('bt:')){ const s=D.bt.sessions.find(x=>'bt:'+x.id===S.acct); if(s) return {kind:'bt',id:s.id,name:s.name,sub:(s.type==='propfirm'?'Prop firm':'Backtest')+(s.acctName?' · '+s.acctName:''),ccy:s.ccy,trades:mergeLayers(s.trades),raw:s.trades,payouts:[],adjs:[],capital:s.capital,session:s} }
+  return {kind:'live',id:'live',name:'Live',sub:'MT5'+(SETTINGS.login?' · '+SETTINGS.login:''),ccy:SYM2CODE[SETTINGS.currency]||'EUR',trades:mergeLayers(D.trades),raw:D.trades,payouts:D.payouts,adjs:D.adjs,capital:SETTINGS.capital||0} }
 function capSteps(A){ const st=[]; let base=A.capital; A.adjs.filter(a=>a.kind!=='credit').slice().sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(a=>{ const delta=a.kind==='deposit'?a.amount:a.amount-base; base+=delta; st.push({t:new Date(a.date).getTime(),delta,base}) }); return st }
 function capAt(A,t,steps){ steps=steps||capSteps(A); let b=A.capital; for(const s of steps){ if(s.t<=t) b=s.base; else break } return b }
 function capNow(A){ return capAt(A,Infinity) }
@@ -1762,10 +1768,10 @@ function buildShell(){
   $('#addFab').innerHTML=ic('plus',26); $('#addFab').onclick=()=>openEditor();
 }
 function openMore(){
-  const items=[['capital','coins',L('Kapitaal','Capital')],['discipline','target','Discipline'],['mt5','plug',L('MT5-koppeling','MT5 connection')],['settings','gear',L('Instellingen','Settings')],['backtest','chart','TWF Backtest']];
+  const items=[['capital','coins',L('Kapitaal','Capital')],['discipline','target','Discipline'],['mt5','plug',L('MT5-koppeling','MT5 connection')],['settings','gear',L('Instellingen','Settings')],['passkey','faceid',pkGet()?L('Face ID aan ✓','Face ID on ✓'):L('Face ID instellen','Set up Face ID')],['backtest','chart','TWF Backtest']];
   const sh=mSheet(L('Meer','More'),`<div class="tvs-grid g2">${items.map(([k,i,l])=>`<button class="tvs-tile big" data-go2="${k}">${ic(i,26)}<span>${esc(l)}</span></button>`).join('')}</div>
     <div class="tvs-grid g3" style="margin-top:10px"><button class="tvs-tile" data-a="theme">${ic(curTheme()==='dark'?'sun':'moon',22)}<span>${curTheme()==='dark'?L('Licht','Light'):L('Donker','Dark')}</span></button><button class="tvs-tile" data-a="lang"><b style="font-size:18px">${LANG==='en'?'NL':'EN'}</b><span>${LANG==='en'?'Nederlands':'English'}</span></button><button class="tvs-tile" data-a="lock">${ic('lock',22)}<span>${L('Vergrendel','Lock')}</span></button></div>`);
-  sh.querySelectorAll('[data-go2]').forEach(b=>b.onclick=()=>{ sh.close(); go(b.dataset.go2) });
+  sh.querySelectorAll('[data-go2]').forEach(b=>b.onclick=()=>{ sh.close(); if(b.dataset.go2==='passkey'){ S.setTab='security'; go('settings'); if(!pkGet()) setTimeout(pkSetup,300); return } go(b.dataset.go2) });
   sh.querySelector('[data-a="theme"]').onclick=()=>{ sh.close(); setTheme(curTheme()==='dark'?'light':'dark'); render() };
   sh.querySelector('[data-a="lang"]').onclick=()=>{ sh.close(); setLang(LANG==='en'?'nl':'en') };
   sh.querySelector('[data-a="lock"]').onclick=()=>{ sh.close(); engageLock() };
@@ -1871,7 +1877,7 @@ function filtered(){ const A=acct(), F=S.tf; const q=F.q.trim().toLowerCase();
   return A.trades.filter(t=>(!F.res||(F.res==='win'?t.pnl>0:F.res==='loss'?t.pnl<0:!t.hadPlan))&&(!F.dir||t.dir===F.dir)&&(!F.pair||t.pair===F.pair)&&(!q||[t.pair,t.setup,t.note].join(' ').toLowerCase().includes(q))).sort((a,b)=>new Date(b.date)-new Date(a.date)) }
 function tRow(t){ const A=acct(); const ph=t.photos&&t.photos[0];
   return `<button class="trow" data-tr="${esc(t.id)}"><span class="ti2 ${ph?'':t.dir}">${ph?`<img src="${esc(ph)}" alt="" loading="lazy">`:esc((t.pair||'?').slice(0,3))}</span>
-   <span class="tn"><b>${esc(t.pair||'—')} <span class="dpill ${t.dir}">${t.dir==='long'?'LONG':'SHORT'}</span>${!t.hadPlan?`<span class="dpill" style="background:rgba(224,163,58,.15);color:var(--amber)">${L('GEEN PLAN','NO PLAN')}</span>`:''}</b><small>${fmtDate(t.date,{day:'numeric',month:'short'})} · ${fmtTime(t.date)}${t.setup&&!t.mt5?' · '+esc(t.setup):''}${t.mt5?' · MT5':''}</small></span>
+   <span class="tn"><b>${esc(t.pair||'—')} <span class="dpill ${t.dir}">${t.dir==='long'?'LONG':'SHORT'}</span>${t.layers?`<span class="dpill" style="background:rgba(76,116,255,.15);color:#7d9bff">×${t.layers.length}</span>`:''}${!t.hadPlan?`<span class="dpill" style="background:rgba(224,163,58,.15);color:var(--amber)">${L('GEEN PLAN','NO PLAN')}</span>`:''}</b><small>${fmtDate(t.date,{day:'numeric',month:'short'})} · ${fmtTime(t.date)}${t.setup&&!t.mt5?' · '+esc(t.setup):''}${t.mt5?' · MT5':''}</small></span>
    <span class="tm">${t.rr!=null?`<span class="chip">${t.rr.toFixed(2)}R</span>`:''}${t.photos&&t.photos.length?`<span class="chip">${ic('image',13)} ${t.photos.length}</span>`:''}${t.note?`<span class="chip">${ic('edit',13)}</span>`:''}</span>
    <span class="tp mono ${t.pnl>=0?'pos':'neg'}">${fmtM(t.pnl,A.ccy,{sign:1})}<small class="rrm">${t.rr!=null?t.rr.toFixed(2)+'R':''}</small></span></button>` }
 function pgTrades(){
@@ -1888,7 +1894,7 @@ function pgTrades(){
 }
 
 /* ---------- Trade-detail ---------- */
-function findTrade(id){ return acct().trades.find(t=>String(t.id)===String(id)) }
+function findTrade(id){ const A=acct(); return A.trades.find(t=>String(t.id)===String(id))||(A.raw||[]).find(t=>String(t.id)===String(id)) }
 function openTrade(id){ const t=findTrade(id); if(!t) return; const A=acct();
   const meta=[[L('Datum','Date'),fmtDate(t.date)+' '+fmtTime(t.date)],[L('Richting','Direction'),t.dir==='long'?'Long':'Short'],['R:R',t.rr!=null?t.rr.toFixed(2)+'R':'—'],
     [L('Plan','Plan'),t.hadPlan?L('Gevolgd ✓','Followed ✓'):L('Geen plan','No plan')],[t.bt?L('Reden','Reason'):'Setup',esc(t.bt?(t.reason||'—'):(t.mt5?'MT5 auto-sync':t.setup||'—'))],[L('Bron','Source'),t.bt?'Backtest':t.mt5?'MT5':L('Handmatig','Manual')]];
@@ -1896,11 +1902,13 @@ function openTrade(id){ const t=findTrade(id); if(!t) return; const A=acct();
   const body=`<div class="tdet"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="dpill ${t.dir}" style="font-size:12px">${t.dir==='long'?'LONG':'SHORT'}</span><b style="font-size:18px">${esc(t.pair)}</b></div>
     <div class="big mono ${t.pnl>=0?'pos':'neg'}">${fmtM(t.pnl,A.ccy,{sign:1})}</div>
     <div class="mgrid">${meta.map(([a,b])=>`<div><small>${a}</small><b>${b}</b></div>`).join('')}</div>
+    ${t.layers?`<h4 style="margin:0 0 8px">${t.layers.length} ${L('lagen (samengevoegd)','layers (merged)')}</h4><div class="tlist" style="margin-bottom:16px">${t.layers.map(tRow).join('')}</div>`:''}
     ${t.note?`<h4 style="margin:0 0 8px">${L('Notitie','Note')}</h4><div class="note">${esc(t.note)}</div>`:''}
     <h4 style="margin:18px 0 8px">Screenshots</h4>${t.photos&&t.photos.length?`<div class="shots">${t.photos.map((u,i)=>`<div class="sh" data-lb="${i}"><img src="${esc(u)}" alt="" loading="lazy"></div>`).join('')}</div>`:`<div class="muted" style="font-size:13.5px">${t.bt?L('Backtest-trades hebben geen screenshots.','Backtest trades have no screenshots.'):L('Nog geen screenshots. Tik op Bewerken om ze toe te voegen.','No screenshots yet. Tap Edit to add some.')}</div>`}</div>`;
-  const foot=t.bt?`<button class="btn btn-g" data-x2>${L('Sluiten','Close')}</button><button class="btn btn-p" data-obt>${ic('chart',16)} ${L('Open sessie','Open session')}</button>`:`<button class="btn btn-danger" data-del>${ic('trash',16)}</button><button class="btn btn-g" data-x2>${L('Sluiten','Close')}</button><button class="btn btn-p" data-ed>${ic('edit',16)} ${L('Bewerken','Edit')}</button>`;
+  const foot=t.layers?`<button class="btn btn-g" data-x2>${L('Sluiten','Close')}</button>`:t.bt?`<button class="btn btn-g" data-x2>${L('Sluiten','Close')}</button><button class="btn btn-p" data-obt>${ic('chart',16)} ${L('Open sessie','Open session')}</button>`:`<button class="btn btn-danger" data-del>${ic('trash',16)}</button><button class="btn btn-g" data-x2>${L('Sluiten','Close')}</button><button class="btn btn-p" data-ed>${ic('edit',16)} ${L('Bewerken','Edit')}</button>`;
   const p=panel(L('Trade','Trade')+' · '+fmtDate(t.date,{day:'numeric',month:'short'}),body,foot,'');
   p.querySelectorAll('[data-lb]').forEach(el=>el.onclick=()=>lightbox(t.photos,+el.dataset.lb));
+  p.querySelectorAll('[data-tr]').forEach(b=>b.onclick=()=>{ p.close(); setTimeout(()=>openTrade(b.dataset.tr),isPhone()?240:0) });
   const q=s=>p.querySelector(s);
   if(q('[data-x2]')) q('[data-x2]').onclick=()=>p.close();
   if(q('[data-obt]')) q('[data-obt]').onclick=()=>window.open(BACKTEST_URL,'_blank','noopener');
@@ -2123,6 +2131,7 @@ function pgSettings(){ const tab=S.setTab||'profile', TOG=(id,on,title,sub)=>`<d
     <div class="srow"><div class="stx"><b>${L('App-icoon (beginscherm)','App icon (home screen)')}</b><small>${L('Het icoon als je TWF Journal op je iPhone of iPad op het beginscherm zet.','The icon when you add TWF Journal to your iPhone or iPad home screen.')}</small></div><div class="lgpick">${Object.keys(LOGO_THEMES).map(k=>`<button class="${icn===k?'on':''}" data-ict="${k}">${markTile(k,38)}<span>${LOGO_THEMES[k][LANG]}</span></button>`).join('')}</div></div>
     <div class="lgprev">${markTile(icn,60)}<small>${L('<b>Let op:</b> iOS onthoudt het icoon op het moment dat je de app op je beginscherm zet. Verwijder de app van je beginscherm en zet hem opnieuw via Safari → Delen → <i>Zet op beginscherm</i>.','<b>Note:</b> iOS keeps the icon from the moment you add the app. Remove it from your home screen and add it again via Safari → Share → <i>Add to Home Screen</i>.')}</small></div></div>` }
   if(tab==='data') body=`<h2>Data</h2><div class="box">
+    <div class="srow"><div class="stx"><b>${L('Gelaagde trades samenvoegen','Merge layered trades')}</b><small>${L('Trades in dezelfde markt en richting die binnen deze tijd sluiten tellen als één trade (kalender, statistieken, boetes).','Trades in the same market and direction closed within this time count as one trade (calendar, statistics, fines).')}</small></div><div class="seg">${MERGE_OPTS.map(([v,l])=>`<button class="${mergeSec()===v?'on':''}" data-mg="${v}">${l()}</button>`).join('')}</div></div>
     <div class="srow"><div class="stx"><b>${L('Exporteer trades','Export trades')}</b><small>${L('CSV-bestand van de gekozen rekening, te openen in Excel of Numbers.','CSV file of the selected account, opens in Excel or Numbers.')}</small></div><button class="btn btn-g" data-act="csv">${ic('download',16)} CSV</button></div></div>
     <h3 style="margin:22px 0 10px;color:var(--neg)">${L('Gevarenzone','Danger zone')}</h3><div class="box" style="border-color:rgba(229,83,75,.35)">
     <div class="srow"><div class="stx"><b>${L('Account herstarten','Reset account')}</b><small>${L('Verwijdert al je live trades, payouts en instellingen. Je API-sleutel blijft, handig om opnieuw met MT5 te synchroniseren.','Deletes all your live trades, payouts and settings. Your API key stays, handy to re-sync with MT5.')}</small></div><button class="btn btn-danger" data-act="reset">${L('Herstarten','Reset')}</button></div>
@@ -2146,6 +2155,7 @@ function bindPage(m){
   m.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>copyText(b.dataset.copy));
   m.querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>{ setTheme(b.dataset.th); render() });
   m.querySelectorAll('[data-lg]').forEach(b=>b.onclick=()=>setLang(b.dataset.lg));
+  m.querySelectorAll('[data-mg]').forEach(b=>b.onclick=()=>{ lsSet('twfj_merge',b.dataset.mg); render(); toast(L('Opgeslagen','Saved'),'','ok',1400) });
   m.querySelectorAll('[data-lgt]').forEach(b=>b.onclick=()=>{ lsSet('twfj_logo',b.dataset.lgt); applyLogoTheme(); render() });
   m.querySelectorAll('[data-ict]').forEach(b=>b.onclick=()=>{ lsSet('twfj_icon',b.dataset.ict); applyAppIcon(b.dataset.ict); render() });
   const sw=(id,fn)=>{ const e=m.querySelector('#'+id); if(e) e.onclick=()=>{ e.classList.toggle('on'); fn(e.classList.contains('on')) } };
@@ -2239,7 +2249,7 @@ async function pkLogin(){ const s=pkGet(); const er=$('#lgErr'); er.textContent=
       if(fatal){ lsDel(PK_KEY); pkUI(); er.textContent=L('Face ID is verlopen. Log één keer in met je wachtwoord en zet het opnieuw aan.','Face ID expired. Sign in once with your password and turn it on again.') } else er.textContent=L('Geen verbinding. Probeer het zo nog eens.','No connection. Try again in a moment.'); return }
     ME=data.session.user; pkSave({...s,userId:ME.id,refreshToken:data.session.refresh_token}); await enterApp(true) }
   catch(e){ er.textContent=L('Geen verbinding. Probeer het zo nog eens.','No connection. Try again in a moment.') } finally{ b.disabled=false } }
-function pkUI(){ const s=pkGet(), on=!!(s&&window.PublicKeyCredential); $('#lgPk').classList.toggle('hide',!on); $('#lgPkOr').classList.toggle('hide',!on); if(on) $('#lgPkT').innerHTML=`${L('Inloggen met Face ID','Sign in with Face ID')} <small>· ${esc(s.name||'')}</small>` }
+function pkUI(){ const s=pkGet(), on=!!window.PublicKeyCredential; $('#lgPk').classList.toggle('hide',!on); $('#lgPkOr').classList.toggle('hide',!on); if(on) $('#lgPkT').innerHTML=`${L('Inloggen met Face ID','Sign in with Face ID')}${s?` <small>· ${esc(s.name||'')}</small>`:''}` }
 function attachAuth(){ sb.auth.onAuthStateChange((ev,session)=>{ const s=pkGet(); if(session&&s&&s.userId&&session.user&&session.user.id===s.userId&&s.refreshToken!==session.refresh_token) pkSave({...s,refreshToken:session.refresh_token}) }) }
 function pkOffer(){ if(!window.PublicKeyCredential||pkGet()||sessionStorage.getItem('twfj_pkasked')) return; try{sessionStorage.setItem('twfj_pkasked','1')}catch(e){}
   if(lsGet('twfj_pkno')&&!isStandalone()) return;
