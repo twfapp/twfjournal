@@ -1168,7 +1168,7 @@ body:not(.theme-light) .sxmenu button:hover{background:#262626}
 /* kpi's */
 .kgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
 @media (max-width:1320px){.kgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (min-width:701px) and (max-width:900px){.calg{grid-auto-rows:72px}.cd{height:72px}}
+.cd.out{height:auto}@media (min-width:701px) and (max-width:900px){.jcalg{grid-auto-rows:78px;gap:6px}.cd{height:78px}.cd .dm{font-size:13px}.cd .dp{font-size:11px}}
 .kc{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;min-width:0}
 .kc .kl{color:var(--ink3);font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:7px}
 .kc .kv{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1221,19 +1221,23 @@ textarea.inp{height:auto;min-height:96px;padding:12px 14px;line-height:1.5;resiz
 .sw::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .sw.on{background:var(--accent)}.sw.on::after{left:21px}
 /* kalender */
-.calh2{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
-.calh2 b{font-size:18px;text-transform:capitalize}
-.calg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) minmax(0,1.1fr);grid-template-rows:auto;grid-auto-rows:86px;gap:6px}
-.calg .wd{font-size:11.5px;font-weight:800;color:var(--ink3);text-align:center;padding:4px 0;text-transform:uppercase;letter-spacing:.04em}
-.cd{width:100%;height:86px;font:inherit;color:inherit;border-radius:12px;background:var(--panel2);border:1px solid var(--line);padding:8px;display:flex;flex-direction:column;justify-content:space-between;text-align:left;min-width:0}
-.cd .dn{font-size:12.5px;color:var(--ink3);font-weight:700}
-.cd .dv{font-weight:800;font-size:13.5px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cd .dc{font-size:11px;color:var(--ink3);text-align:right}
-.cd.p{background:rgba(47,191,113,.13);border-color:rgba(47,191,113,.25)}.cd.p .dv{color:var(--pos)}
-.cd.n{background:rgba(229,83,75,.12);border-color:rgba(229,83,75,.22)}.cd.n .dv{color:var(--neg)}
-.cd.out{opacity:.35}.cd.today{box-shadow:inset 0 0 0 2px var(--accent)}
-.cd.wk{background:transparent;border-style:dashed}
-.cd:not(.out):not(.wk){cursor:pointer}
+.calh2{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+.calt{display:flex;flex-direction:column;align-items:center;gap:2px}.calt b{font-size:19px;text-transform:capitalize}.calt span{font-size:13px;font-weight:700}
+.jcalg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) minmax(0,1.15fr);grid-template-rows:auto;grid-auto-rows:92px;gap:8px}
+.jcalg .wd{font-size:11.5px;font-weight:800;color:var(--ink3);text-align:center;padding:2px 0 4px;text-transform:uppercase;letter-spacing:.05em}
+.cd{position:relative;width:100%;height:92px;box-sizing:border-box;border-radius:14px;padding:9px 10px;display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;text-align:right;min-width:0;font:inherit;color:inherit;background:rgba(128,128,128,.06);border:0;transition:transform .12s,box-shadow .12s}
+.cd .dn{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--ink3);font-weight:700;text-align:left}
+.cd .dn i{font-style:normal;font-size:10.5px;font-weight:800;min-width:18px;height:18px;padding:0 5px;border-radius:9px;display:inline-grid;place-items:center;background:rgba(128,128,128,.16);color:var(--ink2)}
+.cd .dm{font-weight:800;font-size:15px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cd .dp{font-size:11.5px;font-weight:700;opacity:.85;white-space:nowrap}
+.cd.p{background:rgba(47,191,113,var(--k,.18));color:var(--pos)}.cd.n{background:rgba(229,83,75,var(--k,.16));color:var(--neg)}
+.cd.p .dn,.cd.n .dn{color:inherit;opacity:.9}.cd.p .dn i{background:rgba(47,191,113,.25);color:inherit}.cd.n .dn i{background:rgba(229,83,75,.25);color:inherit}
+body.theme-light .cd.p .dm{color:#137a43}body.theme-light .cd.n .dm{color:#b42318}
+.cd.e{background:rgba(128,128,128,.045)}.cd.out{background:transparent}
+.cd.today{box-shadow:inset 0 0 0 2px var(--accent)}
+button.cd:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.25)}button.cd.today:hover{box-shadow:inset 0 0 0 2px var(--accent),0 6px 18px rgba(0,0,0,.25)}
+.cd.wk{background:transparent;box-shadow:inset 0 0 0 1px var(--line2)}.cd.wk .dn{font-size:11.5px}
+.cd.wk.p .dm{color:var(--pos)}.cd.wk.n .dm{color:var(--neg)}.cd.wk .dp{color:var(--ink3)}
 /* statistieken */
 .hbars{display:flex;flex-direction:column;gap:9px}
 .hbr{display:grid;grid-template-columns:110px minmax(0,1fr) 92px;gap:10px;align-items:center;font-size:13px}
@@ -1324,10 +1328,9 @@ details.faq p{margin:10px 0 0;color:var(--ink2);line-height:1.55;font-size:14px}
   .eqwrap{height:190px}
   .trow{grid-template-columns:40px minmax(0,1fr) auto;gap:12px;padding:12px}
   .trow .ti2{width:40px;height:40px}.trow .tm{display:none}.trow .tp .rrm{display:block}
-  .calg{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
-  .calg .wkh,.calg .cd.wk{display:none}
-  .calg{grid-auto-rows:58px}
-  .cd{height:58px;padding:5px;border-radius:9px}.cd .dn{font-size:11px}.cd .dv{font-size:10.5px}.cd .dc{display:none}
+  .jcalg{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;grid-auto-rows:64px}
+  .jcalg .wkh,.jcalg .cd.wk{display:none}
+  .cd{height:64px;padding:5px 3px 6px;border-radius:10px;text-align:center;justify-content:space-between}.cd .dn{font-size:10.5px;justify-content:center}.cd .dm{font-size:10.5px;letter-spacing:-.02em}.cd .dp{font-size:9.5px}
   .hbr{grid-template-columns:76px minmax(0,1fr) 78px;font-size:12.5px}
   .mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ed .three{grid-template-columns:1fr 1fr}
@@ -1421,8 +1424,8 @@ html.pwa .addfab{bottom:calc(84px + env(safe-area-inset-bottom) + 100% - 100lvh)
    Zelfde database als v15 (trades, payouts, adjustments, settings,
    storage 'trade-photos') + backtest-sessies uit bt_items.
    ========================================================= */
-const CFG={ SUPABASE_URL:'https://pntyqppxwibvpxqcchoo.supabase.co', SUPABASE_ANON_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBudHlxcHB4d2lidnB4cWNjaG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyOTExNjMsImV4cCI6MjEwMzg2NzE2M30.B0ZoIYSfaw1AG6sQZHQnqcAZ3v_ZQdYfHiHwmT9Us2E', VERSION:'v16.0', BUILD:'2026-11-15' };
-const TWF_JOURNAL_VERSION = 'v16.0';
+const CFG={ SUPABASE_URL:'https://pntyqppxwibvpxqcchoo.supabase.co', SUPABASE_ANON_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBudHlxcHB4d2lidnB4cWNjaG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyOTExNjMsImV4cCI6MjEwMzg2NzE2M30.B0ZoIYSfaw1AG6sQZHQnqcAZ3v_ZQdYfHiHwmT9Us2E', VERSION:'v16.1', BUILD:'2026-11-15b' };
+const TWF_JOURNAL_VERSION = 'v16.1';
 const BACKTEST_URL='https://twfapp.github.io/twfbacktest/';
 
 /* ---------------- basis ---------------- */
@@ -1973,20 +1976,23 @@ function openEditor(t){
 }
 
 /* ---------- Kalender ---------- */
-function pgCalendar(){ const A=acct(), c=S.cal, y=c.getFullYear(), mo=c.getMonth(), first=new Date(y,mo,1), nd=new Date(y,mo+1,0).getDate(), lead=(first.getDay()+6)%7;
-  const days={}; A.trades.forEach(t=>{ const d=new Date(t.date); if(d.getFullYear()===y&&d.getMonth()===mo){ const k=d.getDate(); (days[k]=days[k]||{v:0,n:0,w:0}); days[k].v+=t.pnl; days[k].n++; if(t.pnl>0) days[k].w++ } });
-  const mt=A.trades.filter(t=>{const d=new Date(t.date);return d.getFullYear()===y&&d.getMonth()===mo}), ms=stats(mt,A), tdy=new Date();
-  const wd=LANG==='en'?['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:['Ma','Di','Wo','Do','Vr','Za','Zo'];
+function pgCalendar(){ const A=acct(), c=S.cal, y=c.getFullYear(), mo=c.getMonth(), first=new Date(y,mo,1), nd=new Date(y,mo+1,0).getDate(), lead=(first.getDay()+6)%7, steps=capSteps(A), ph=isPhone();
+  const days={}; A.trades.forEach(t=>{ const d=new Date(t.date); if(d.getFullYear()===y&&d.getMonth()===mo){ const k=d.getDate(); (days[k]=days[k]||{v:0,n:0,w:0,cap:capAt(A,new Date(y,mo,k).getTime(),steps)}); days[k].v+=t.pnl; days[k].n++; if(t.pnl>0) days[k].w++ } });
+  const pct=(v,cap)=>cap?v/cap*100:0, mx=Math.max(1,...Object.values(days).map(d=>Math.abs(d.v)));
+  const mt=A.trades.filter(t=>{const d=new Date(t.date);return d.getFullYear()===y&&d.getMonth()===mo}), ms=stats(mt,A), mCap=capAt(A,first.getTime(),steps), tdy=new Date();
+  const money=v=>ph?(v<0?'−':'+')+(fmtM(Math.abs(v),A.ccy,{dp:0}).replace(/\s/g,'').length>6?shortN(Math.abs(v)).replace(/^[+−]/,'')+'':fmtM(Math.abs(v),A.ccy,{dp:0}).replace(/\s/g,'')):fmtM(v,A.ccy,{dp:0,sign:1});
+  const wd=LANG==='en'?(ph?['M','T','W','T','F','S','S']:['Mon','Tue','Wed','Thu','Fri','Sat','Sun']):(ph?['M','D','W','D','V','Z','Z']:['Ma','Di','Wo','Do','Vr','Za','Zo']);
   let cells=wd.map(x=>`<div class="wd">${x}</div>`).join('')+`<div class="wd wkh">${L('Week','Week')}</div>`;
-  const tot=lead+nd, rows=Math.ceil(tot/7); let dnum=1-lead;
-  for(let r=0;r<rows;r++){ let wv=0,wn=0;
-    for(let c2=0;c2<7;c2++,dnum++){ if(dnum<1||dnum>nd){ cells+='<div class="cd out"></div>'; continue } const v=days[dnum]; if(v){wv+=v.v;wn+=v.n}
-      const today=y===tdy.getFullYear()&&mo===tdy.getMonth()&&dnum===tdy.getDate();
-      cells+=`<button class="cd ${v?(v.v>0?'p':v.v<0?'n':''):''} ${today?'today':''}" data-day="${dnum}"><span class="dn">${dnum}</span>${v?`<span><span class="dv mono" style="display:block">${isPhone()?shortN(v.v):fmtM(v.v,A.ccy,{dp:0,sign:1})}</span><span class="dc">${v.n} trade${v.n>1?'s':''}</span></span>`:''}</button>` }
-    cells+=`<div class="cd wk"><span class="dn">W${r+1}</span>${wn?`<span><span class="dv mono ${wv>=0?'pos':'neg'}" style="display:block">${fmtM(wv,A.ccy,{dp:0,sign:1})}</span><span class="dc">${wn} trades</span></span>`:''}</div>` }
-  return head(L('Kalender','Calendar'),L('Je resultaat per dag. Tik op een dag voor de trades.','Your result per day. Tap a day to see its trades.'),'')+
-   `<div class="jgrid"><div class="box c12"><div class="calh2"><button class="ib" data-cal="-1">${ic('back')}</button><b>${first.toLocaleDateString(locale(),{month:'long',year:'numeric'})}</b><button class="ib" data-cal="1">${ic('next')}</button></div><div class="calg">${cells}</div></div>
-   <div class="c12"><div class="kgrid">${kc(L('Maand P&L','Month P&L'),fmtM(ms.net,A.ccy,{sign:1}),ms.net>=0?'pos':'neg',`${ms.n} trades`,'chart')}${kc(L('Winratio','Win rate'),Math.round(ms.wr)+'%','',`${ms.wins}W · ${ms.losses}L`,'target')}${kc(L('Groene dagen','Green days'),Math.round(ms.greenDays)+'%','',`${Object.values(days).filter(v=>v.v>0).length} / ${Object.keys(days).length} ${L('dagen','days')}`,'calendar')}${kc(L('Beste dag','Best day'),Object.keys(days).length?fmtM(Math.max(...Object.values(days).map(v=>v.v)),A.ccy,{sign:1}):'—','pos','','arrowup')}${kc(L('Slechtste dag','Worst day'),Object.keys(days).length?fmtM(Math.min(...Object.values(days).map(v=>v.v)),A.ccy,{sign:1}):'—','neg','','arrowdown')}</div></div></div>` }
+  const rows=Math.ceil((lead+nd)/7); let dnum=1-lead;
+  for(let r=0;r<rows;r++){ let wv=0,wn=0,wcap=0;
+    for(let c2=0;c2<7;c2++,dnum++){ if(dnum<1||dnum>nd){ cells+='<div class="cd out"></div>'; continue } const v=days[dnum]; if(v){wv+=v.v;wn+=v.n;wcap=wcap||v.cap}
+      const today=y===tdy.getFullYear()&&mo===tdy.getMonth()&&dnum===tdy.getDate(), k=v?Math.min(1,Math.abs(v.v)/mx):0;
+      cells+=`<button class="cd ${v?(v.v>0?'p':v.v<0?'n':'z'):'e'} ${today?'today':''}" data-day="${dnum}" ${v?`style="--k:${(0.10+k*0.34).toFixed(3)}"`:''}><span class="dn">${dnum}${v&&!ph?`<i>${v.n}</i>`:''}</span>${v?`<span class="dm mono">${money(v.v)}</span><span class="dp mono">${fmtPct(pct(v.v,v.cap),ph?1:2)}</span>`:''}</button>` }
+    cells+=`<div class="cd wk ${wn?(wv>=0?'p':'n'):''}"><span class="dn">${L('Week','Week')} ${r+1}</span>${wn?`<span class="dm mono">${fmtM(wv,A.ccy,{dp:0,sign:1})}</span><span class="dp mono">${fmtPct(pct(wv,wcap),2)} · ${wn} trades</span>`:`<span class="dp">—</span>`}</div>` }
+  const dv=Object.values(days);
+  return head(L('Kalender','Calendar'),L('Je resultaat per dag in geld en procent van je kapitaal. Tik op een dag voor de trades.','Your result per day in money and percent of your capital. Tap a day to see its trades.'),'')+
+   `<div class="jgrid"><div class="box c12 calbox"><div class="calh2"><button class="ib" data-cal="-1">${ic('back')}</button><div class="calt"><b>${first.toLocaleDateString(locale(),{month:'long',year:'numeric'})}</b><span class="${ms.net>=0?'pos':'neg'} mono">${fmtM(ms.net,A.ccy,{sign:1})} · ${fmtPct(pct(ms.net,mCap),2)}</span></div><button class="ib" data-cal="1">${ic('next')}</button></div><div class="jcalg">${cells}</div></div>
+   <div class="c12"><div class="kgrid">${kc(L('Maand P&L','Month P&L'),fmtM(ms.net,A.ccy,{sign:1}),ms.net>=0?'pos':'neg',`${fmtPct(pct(ms.net,mCap),2)} · ${ms.n} trades`,'chart')}${kc(L('Winratio','Win rate'),Math.round(ms.wr)+'%','',`${ms.wins}W · ${ms.losses}L`,'target',ms.wr)}${kc(L('Groene dagen','Green days'),Math.round(ms.greenDays)+'%','',`${dv.filter(v=>v.v>0).length} / ${dv.length} ${L('dagen','days')}`,'calendar')}${kc(L('Beste dag','Best day'),dv.length?fmtM(Math.max(...dv.map(v=>v.v)),A.ccy,{sign:1}):'—','pos',dv.length?fmtPct(Math.max(...dv.map(v=>pct(v.v,v.cap))),2):'','arrowup')}${kc(L('Slechtste dag','Worst day'),dv.length?fmtM(Math.min(...dv.map(v=>v.v)),A.ccy,{sign:1}):'—','neg',dv.length?fmtPct(Math.min(...dv.map(v=>pct(v.v,v.cap))),2):'','arrowdown')}</div></div></div>` }
 function openDay(day){ const A=acct(), c=S.cal; const tr=A.trades.filter(t=>{ const d=new Date(t.date); return d.getFullYear()===c.getFullYear()&&d.getMonth()===c.getMonth()&&d.getDate()===day }).sort((a,b)=>new Date(a.date)-new Date(b.date));
   const net=tr.reduce((s,t)=>s+t.pnl,0);
   const p=panel(new Date(c.getFullYear(),c.getMonth(),day).toLocaleDateString(locale(),{weekday:'long',day:'numeric',month:'long'}),tr.length?`<div style="display:flex;justify-content:space-between;margin-bottom:12px"><span class="muted">${tr.length} trades</span><b class="${net>=0?'pos':'neg'}">${fmtM(net,A.ccy,{sign:1})}</b></div><div class="tlist">${tr.map(tRow).join('')}</div>`:`<div class="empty"><div class="ei">${ic('calendar',22)}</div><h4>${L('Geen trades','No trades')}</h4></div>`,'');
