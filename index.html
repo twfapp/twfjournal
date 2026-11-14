@@ -1426,8 +1426,8 @@ body.theme-light .tvsheet .tvs-foot{border-color:rgba(0,0,0,.06)}
    Zelfde database als v15 (trades, payouts, adjustments, settings,
    storage 'trade-photos') + backtest-sessies uit bt_items.
    ========================================================= */
-const CFG={ SUPABASE_URL:'https://pntyqppxwibvpxqcchoo.supabase.co', SUPABASE_ANON_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBudHlxcHB4d2lidnB4cWNjaG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyOTExNjMsImV4cCI6MjEwMzg2NzE2M30.B0ZoIYSfaw1AG6sQZHQnqcAZ3v_ZQdYfHiHwmT9Us2E', VERSION:'v16.3', BUILD:'2026-11-16' };
-const TWF_JOURNAL_VERSION = 'v16.3';
+const CFG={ SUPABASE_URL:'https://pntyqppxwibvpxqcchoo.supabase.co', SUPABASE_ANON_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBudHlxcHB4d2lidnB4cWNjaG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyOTExNjMsImV4cCI6MjEwMzg2NzE2M30.B0ZoIYSfaw1AG6sQZHQnqcAZ3v_ZQdYfHiHwmT9Us2E', VERSION:'v16.4', BUILD:'2026-11-16b' };
+const TWF_JOURNAL_VERSION = 'v16.4';
 const BACKTEST_URL='https://twfapp.github.io/twfbacktest/';
 let _btWin=null;
 function openBacktest(){ try{ if(_btWin&&!_btWin.closed){ _btWin.focus(); return } }catch(e){} _btWin=window.open(BACKTEST_URL,'twf-backtest'); try{ _btWin&&_btWin.focus() }catch(e){} }
@@ -1594,7 +1594,7 @@ IC.eyeoff=IC.eyeoff||'<path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 1
 /* gedeeld met Backtest: logo-thema's en app-icoon */
 const profile=()=>({prefs:{logoTheme:lsGet('twfj_logo')||'blue',iconTheme:lsGet('twfj_icon')||'blue'}});
 function inkOn(hex){ const m=String(hex).replace('#','').match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i); if(!m) return '#fff'; const [r,g,b]=m.slice(1).map(x=>parseInt(x,16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)); const L=.2126*r+.7152*g+.0722*b; return (L+.05)/.055>1.05/(L+.05)?'#0b0e14':'#fff' }
-const markSvg=(fg,line)=>`<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="5.2" y="3.2" width="14.6" height="17.6" rx="2.6" stroke="${fg}" stroke-width="1.9"/><path d="M3.4 7.6h3.2M3.4 12h3.2M3.4 16.4h3.2" stroke="${fg}" stroke-width="1.9"/><path d="M8.6 15.6l2.7-3 2.2 1.7 3.4-4.6" stroke="${line||fg}" stroke-width="2.1"/><path d="M14.7 9.6h2.3v2.3" stroke="${line||fg}" stroke-width="2.1"/></svg>`;
+const markSvg=(fg,line)=>`<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect fill="none" x="5.2" y="3.2" width="14.6" height="17.6" rx="2.6" stroke="${fg}" stroke-width="1.9"/><path fill="none" d="M3.4 7.6h3.2M3.4 12h3.2M3.4 16.4h3.2" stroke="${fg}" stroke-width="1.9"/><path fill="none" d="M8.6 15.6l2.7-3 2.2 1.7 3.4-4.6" stroke="${line||fg}" stroke-width="2.1"/><path fill="none" d="M14.7 9.6h2.3v2.3" stroke="${line||fg}" stroke-width="2.1"/></svg>`;
 const TWF_MARK=markSvg('currentColor','var(--lgline,currentColor)');
 /* v8.4: LOGO-THEMA'S — apart voor de app zelf en voor het icoon op het beginscherm */
 const LOGO_THEMES={
