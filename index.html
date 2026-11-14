@@ -1356,6 +1356,9 @@ body.theme-light .tvsheet .tvs-foot{border-color:rgba(0,0,0,.06)}
 .trow.issel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accentSoft)}.trow.issel .tck{background:var(--accent);border-color:var(--accent);color:#fff}
 @media (max-width:900px){ .trow.selm{grid-template-columns:24px 40px minmax(0,1fr) auto} .selbar{position:sticky;top:-18px} .selbar .btn{flex:1 1 auto;padding:0 10px;font-size:13px} .selbar span{flex-basis:100%} }
 
+.addacct{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;border:1.5px dashed var(--line2);background:transparent;text-align:left;width:100%;color:var(--accent);margin-top:4px}
+.addacct b{display:block;font-size:14.5px;color:var(--ink)}.addacct small{display:block;color:var(--ink3);font-size:12.5px;margin-top:2px}.addacct:hover{border-color:var(--accent)}
+
 </style>
 </head>
 <body>
@@ -1427,8 +1430,8 @@ body.theme-light .tvsheet .tvs-foot{border-color:rgba(0,0,0,.06)}
    Zelfde database als v15 (trades, payouts, adjustments, settings,
    storage 'trade-photos') + backtest-sessies uit bt_items.
    ========================================================= */
-const CFG={ SUPABASE_URL:'https://pntyqppxwibvpxqcchoo.supabase.co', SUPABASE_ANON_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBudHlxcHB4d2lidnB4cWNjaG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyOTExNjMsImV4cCI6MjEwMzg2NzE2M30.B0ZoIYSfaw1AG6sQZHQnqcAZ3v_ZQdYfHiHwmT9Us2E', VERSION:'v16.5', BUILD:'2026-11-17' };
-const TWF_JOURNAL_VERSION = 'v16.5';
+const CFG={ SUPABASE_URL:'https://pntyqppxwibvpxqcchoo.supabase.co', SUPABASE_ANON_KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBudHlxcHB4d2lidnB4cWNjaG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyOTExNjMsImV4cCI6MjEwMzg2NzE2M30.B0ZoIYSfaw1AG6sQZHQnqcAZ3v_ZQdYfHiHwmT9Us2E', VERSION:'v16.6', BUILD:'2026-11-17b' };
+const TWF_JOURNAL_VERSION = 'v16.6';
 const BACKTEST_URL='https://twfapp.github.io/twfbacktest/';
 let _btWin=null;
 function openBacktest(){ try{ if(_btWin&&!_btWin.closed){ _btWin.focus(); return } }catch(e){} _btWin=window.open(BACKTEST_URL,'twf-backtest'); try{ _btWin&&_btWin.focus() }catch(e){} }
@@ -1694,7 +1697,7 @@ const SEL={on:false,ids:new Set()};
 const S={ page:lsGet('twfj_page')||'overview', acct:lsGet('twfj_acct')||'live', range:lsGet('twfj_range')||'3M', tf:{q:'',res:'',dir:'',pair:''}, cal:new Date(), blur:lsGet('twfj_blur')==='1', setTab:'profile' };
 let sb=null, ME=null;
 let SETTINGS={ name:'Trader', login:'', broker:'', server:'', capital:10000, currency:'€', boeteEnabled:false, boeteBedrag:25, goedDoel:'', apiKey:'', lockEnabled:true, lockPin:'0000' };
-const D={ trades:[], payouts:[], adjs:[], adjMissing:false, bt:{sessions:[],accounts:{},loaded:false} };
+const D={ live:[], liveMissing:false, trades:[], payouts:[], adjs:[], adjMissing:false, bt:{sessions:[],accounts:{},loaded:false} };
 
 /* ---------------- Supabase ---------------- */
 function newSb(){ return supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}}) }
@@ -1705,9 +1708,10 @@ async function fetchSettings(){ const {data,error}=await sb.from('settings').sel
     boeteEnabled:!!data.boete_enabled, boeteBedrag:Number(data.boete_bedrag)||0, goedDoel:data.goed_doel||'', apiKey:data.api_key||'', lockEnabled:data.lock_enabled!==false, lockPin:data.lock_pin||'0000' } }
 async function fetchTrades(){ const {data,error}=await sb.from('trades').select('*').eq('user_id',ME.id).order('date',{ascending:true}); if(error){ console.error(error); D.trades=[]; return }
   D.trades=(data||[]).map(r=>({ id:r.id, pair:r.pair||'', dir:/short|sell/i.test(r.dir||'')?'short':'long', pnl:Number(r.pnl)||0, rr:r.rr!=null&&r.rr!==''?Number(r.rr):null, date:r.date,
-    setup:r.setup||'', note:r.note||'', hadPlan:!!r.had_plan, syncedAt:r.created_at||r.date, photos:photoList(r.photo_url), mt5:(r.setup||'')==='MT5 auto-sync', lots:r.lots!=null?Number(r.lots):null, entry:r.entry!=null?Number(r.entry):null, exitPrice:r.exit_price!=null?Number(r.exit_price):null })) }
-async function fetchPayouts(){ const {data,error}=await sb.from('payouts').select('*').eq('user_id',ME.id).order('date',{ascending:false}); D.payouts=error?[]:(data||[]).map(r=>({id:r.id,amount:Number(r.amount)||0,date:r.date,note:r.note||''})) }
-async function fetchAdjs(){ const {data,error}=await sb.from('adjustments').select('*').eq('user_id',ME.id).order('date',{ascending:false}); if(error){ D.adjs=[]; D.adjMissing=true; return } D.adjMissing=false; D.adjs=(data||[]).map(r=>({id:r.id,kind:r.kind,amount:Number(r.amount)||0,date:r.date,note:r.note||''})) }
+    setup:r.setup||'', note:r.note||'', hadPlan:!!r.had_plan, syncedAt:r.created_at||r.date, photos:photoList(r.photo_url), mt5:(r.setup||'')==='MT5 auto-sync', lots:r.lots!=null?Number(r.lots):null, entry:r.entry!=null?Number(r.entry):null, exitPrice:r.exit_price!=null?Number(r.exit_price):null, account:r.account_id||null })) }
+async function fetchPayouts(){ const {data,error}=await sb.from('payouts').select('*').eq('user_id',ME.id).order('date',{ascending:false}); D.payouts=error?[]:(data||[]).map(r=>({id:r.id,amount:Number(r.amount)||0,date:r.date,note:r.note||'',account:r.account_id||null})) }
+async function fetchAdjs(){ const {data,error}=await sb.from('adjustments').select('*').eq('user_id',ME.id).order('date',{ascending:false}); if(error){ D.adjs=[]; D.adjMissing=true; return } D.adjMissing=false; D.adjs=(data||[]).map(r=>({id:r.id,kind:r.kind,amount:Number(r.amount)||0,date:r.date,note:r.note||'',account:r.account_id||null})) }
+async function fetchLive(){ try{ const {data,error}=await sb.from('live_accounts').select('*').eq('user_id',ME.id).order('created_at',{ascending:true}); D.live=error?[]:(data||[]); D.liveMissing=!!error }catch(e){ D.live=[]; D.liveMissing=true } }
 /* backtest: rechtstreeks uit de Backtest-database (bt_items), anders oude bt_trades */
 async function fetchBt(){ const bt={sessions:[],accounts:{},loaded:true};
   try{ const {data,error}=await sb.from('bt_items').select('kind,id,data').eq('user_id',ME.id).in('kind',['sessions','accounts']);
@@ -1723,7 +1727,7 @@ async function fetchBt(){ const bt={sessions:[],accounts:{},loaded:true};
         bt.sessions=Object.values(g) } }catch(e){} }
   bt.sessions.sort((a,b)=>String(b.updated||'').localeCompare(String(a.updated||'')));
   D.bt=bt; if(S.acct.startsWith('bt:')&&!bt.sessions.some(s=>'bt:'+s.id===S.acct)) S.acct='live' }
-async function loadAll(){ await fetchSettings(); await Promise.all([fetchTrades(),fetchPayouts(),fetchAdjs(),fetchBt(),fetchGroups()]) }
+async function loadAll(){ await fetchSettings(); await Promise.all([fetchTrades(),fetchPayouts(),fetchAdjs(),fetchBt(),fetchGroups(),fetchLive()]) }
 
 /* ---------------- rekening-context ---------------- */
 function curCcy(){ const A=acct(); return A.ccy }
@@ -1747,7 +1751,9 @@ function mergeLayers(list,key){ if(!list.length) return list; const gs=D.groups.
   _mc.set(list,{sig,n:list.length,out}); return out }
 function acct(){
   if(S.acct.startsWith('bt:')){ const s=D.bt.sessions.find(x=>'bt:'+x.id===S.acct); if(s) return {kind:'bt',id:s.id,name:s.name,sub:(s.type==='propfirm'?'Prop firm':'Backtest')+(s.acctName?' · '+s.acctName:''),ccy:s.ccy,trades:mergeLayers(s.trades,'bt:'+s.id),raw:s.trades,payouts:[],adjs:[],capital:s.capital,session:s} }
-  return {kind:'live',id:'live',name:'Live',sub:'MT5'+(SETTINGS.login?' · '+SETTINGS.login:''),ccy:SYM2CODE[SETTINGS.currency]||'EUR',trades:mergeLayers(D.trades,'live'),raw:D.trades,payouts:D.payouts,adjs:D.adjs,capital:SETTINGS.capital||0} }
+  if(S.acct.startsWith('live:')){ const la=D.live.find(x=>'live:'+x.id===S.acct); if(la){ const raw=D.trades.filter(t=>t.account===la.id); return {kind:'live',id:S.acct,liveId:la.id,la,name:la.name||'Live',sub:'MT5'+(la.login?' · '+la.login:''),ccy:SYM2CODE[la.currency]||'EUR',cur:la.currency||'€',trades:mergeLayers(raw,S.acct),raw,payouts:D.payouts.filter(p=>p.account===la.id),adjs:D.adjs.filter(a=>a.account===la.id),capital:Number(la.capital)||0,apiKey:la.api_key,login:la.login,server:la.server||la.broker} } }
+  const raw=D.trades.filter(t=>!t.account);
+  return {kind:'live',id:'live',liveId:null,name:D.live.length?L('Hoofdrekening','Main account'):'Live',sub:'MT5'+(SETTINGS.login?' · '+SETTINGS.login:''),ccy:SYM2CODE[SETTINGS.currency]||'EUR',cur:SETTINGS.currency,trades:mergeLayers(raw,'live'),raw,payouts:D.payouts.filter(p=>!p.account),adjs:D.adjs.filter(a=>!a.account),capital:SETTINGS.capital||0,apiKey:SETTINGS.apiKey,login:SETTINGS.login,server:SETTINGS.server||SETTINGS.broker} }
 function capSteps(A){ const st=[]; let base=A.capital; A.adjs.filter(a=>a.kind!=='credit').slice().sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(a=>{ const delta=a.kind==='deposit'?a.amount:a.amount-base; base+=delta; st.push({t:new Date(a.date).getTime(),delta,base}) }); return st }
 function capAt(A,t,steps){ steps=steps||capSteps(A); let b=A.capital; for(const s of steps){ if(s.t<=t) b=s.base; else break } return b }
 function capNow(A){ return capAt(A,Infinity) }
@@ -1810,18 +1816,45 @@ function setLang(l){ LANG=l; lsSet('twf_lang',l); document.documentElement.lang=
 function acctListHtml(){ const live={kind:'live'}; const A0=S.acct;
   const row=(key,cls,title,sub,right)=>`<button data-acct="${key}" class="${A0===key?'on':''}"><span class="ad ${cls}">${ic(cls==='live'?'plug':'chart',18)}</span><span style="min-width:0"><b>${esc(title)}</b><small>${esc(sub)}</small></span><span class="ar">${right}</span></button>`;
   const LA=(()=>{ const s=S.acct; S.acct='live'; const a=acct(); S.acct=s; return a })();
-  let h=`<div class="acctlist"><div class="grp">Live</div>`+row('live','live',L('Live-rekening','Live account'),'MT5'+(SETTINGS.login?' · '+SETTINGS.login:'')+' · '+LA.trades.length+' trades',S.blur?'••••':fmtM(balanceOf(LA),LA.ccy,{dp:0}));
+  let h=`<div class="acctlist"><div class="grp">Live</div>`+row('live','live',D.live.length?L('Hoofdrekening','Main account'):L('Live-rekening','Live account'),'MT5'+(SETTINGS.login?' · '+SETTINGS.login:'')+' · '+LA.trades.length+' trades',S.blur?'••••':fmtM(balanceOf(LA),LA.ccy,{dp:0}))+
+    D.live.map(la=>{ const s0=S.acct; S.acct='live:'+la.id; const A=acct(); S.acct=s0; return row('live:'+la.id,'live',la.name||'Live','MT5'+(la.login?' · '+la.login:'')+' · '+A.trades.length+' trades',S.blur?'••••':fmtM(balanceOf(A),A.ccy,{dp:0})) }).join('')+
+    `<button class="addacct" data-addlive>${ic('plus',18)}<span><b>${L('Live-rekening toevoegen','Add live account')}</b><small>${L('Met een eigen API-sleutel voor de EA','With its own API key for the EA')}</small></span></button>`;
   if(D.bt.sessions.length){ h+=`<div class="grp">Backtest</div>`+D.bt.sessions.map(s=>{ const A={kind:'bt',trades:s.trades,payouts:[],adjs:[],capital:s.capital,ccy:s.ccy}; return row('bt:'+s.id,'bt',s.name,(s.type==='propfirm'?'Prop firm':'Backtest')+(s.acctName?' · '+s.acctName:'')+' · '+s.trades.length+' trades',fmtM(balanceOf(A),s.ccy,{dp:0})) }).join('') }
   else h+=`<div class="grp">Backtest</div><div class="muted" style="padding:6px 4px 2px;font-size:13px">${L('Nog geen backtest-sessies. Maak er een in TWF Backtest.','No backtest sessions yet. Create one in TWF Backtest.')}</div>`;
   return h+'</div>' }
 function openAcctPicker(anchor){
   const pick=root=>root.querySelectorAll('[data-acct]').forEach(b=>b.onclick=()=>{ S.acct=b.dataset.acct; lsSet('twfj_acct',S.acct); closeAll(); render(); toast(L('Rekening gewisseld','Account switched'),acct().name,'ok',1800) });
   let closeAll;
-  if(isPhone()){ const sh=mSheet(L('Rekening','Account'),acctListHtml()); closeAll=()=>sh.close(); pick(sh); return }
+  if(isPhone()){ const sh=mSheet(L('Rekening','Account'),acctListHtml()); closeAll=()=>sh.close(); pick(sh); const ad=sh.querySelector('[data-addlive]'); if(ad) ad.onclick=()=>{ sh.close(); setTimeout(newLive,240) }; return }
   $$('.acctpop').forEach(x=>x.remove()); const p=document.createElement('div'); p.className='acctpop'; p.innerHTML=acctListHtml(); document.body.appendChild(p);
   const r=anchor.getBoundingClientRect(); p.style.left=Math.min(r.left,innerWidth-p.offsetWidth-10)+'px'; p.style.top=(r.bottom+8)+'px';
-  closeAll=()=>p.remove(); pick(p);
+  closeAll=()=>p.remove(); pick(p); const ad=p.querySelector('[data-addlive]'); if(ad) ad.onclick=()=>{ closeAll(); newLive() };
   setTimeout(()=>{ const off=e=>{ if(!p.contains(e.target)){ p.remove(); document.removeEventListener('mousedown',off) } }; document.addEventListener('mousedown',off) },0) }
+function liveForm(la){ return `<div class="field"><label>${L('Naam','Name')}</label><input class="inp" id="lvN" value="${esc(la?la.name:'')}" placeholder="${L('bijv. FTMO 10K','e.g. FTMO 10K')}"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="field"><label>${L('Startkapitaal','Starting capital')}</label><input class="inp" id="lvC" inputmode="decimal" value="${la?la.capital??'':'10000'}"></div>
+  <div class="field"><label>${L('Valuta','Currency')}</label><select class="inp" id="lvCu">${['€','$','£','CHF'].map(c=>`<option ${(la?la.currency:'€')===c?'selected':''}>${c}</option>`).join('')}</select></div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="field"><label>${L('MT5-accountnummer (optioneel)','MT5 account number (optional)')}</label><input class="inp" id="lvL" inputmode="numeric" value="${esc(la?la.login||'':'')}"></div>
+  <div class="field"><label>${L('Server (optioneel)','Server (optional)')}</label><input class="inp" id="lvS" value="${esc(la?la.server||'':'')}"></div></div>` }
+function liveRead(p){ const q=s=>p.querySelector(s); return { name:q('#lvN').value.trim()||'Live', capital:parseFloat(String(q('#lvC').value).replace(',','.'))||0, currency:q('#lvCu').value, login:q('#lvL').value.trim()||null, server:q('#lvS').value.trim()||null } }
+function newLive(){ if(D.liveMissing){ toast(L('Nog niet beschikbaar','Not available yet'),L('De database is nog niet bijgewerkt voor extra rekeningen.','The database is not yet updated for extra accounts.'),'bad'); return }
+  const p=panel(L('Nieuwe live-rekening','New live account'),liveForm(null)+`<p class="muted" style="margin:4px 0 0;font-size:13px;line-height:1.5">${L('Je krijgt meteen een eigen API-sleutel. Die plak je in de TWF Journal EA op dit MT5-account.','You get its own API key right away. Paste it into the TWF Journal EA on this MT5 account.')}</p>`,`<button class="btn btn-g" data-x2>${L('Annuleren','Cancel')}</button><button class="btn btn-p" data-ok>${L('Aanmaken','Create')}</button>`);
+  p.querySelector('[data-x2]').onclick=()=>p.close();
+  p.querySelector('[data-ok]').onclick=async e=>{ const b=e.currentTarget; b.disabled=true; const v=liveRead(p);
+    const {data,error}=await sb.from('live_accounts').insert({...v,user_id:ME.id}).select().single(); b.disabled=false;
+    if(error){ toast(L('Aanmaken mislukt','Create failed'),error.message,'bad'); return }
+    await fetchLive(); S.acct='live:'+data.id; lsSet('twfj_acct',S.acct); p.close(); haptic('ok'); go('mt5');
+    setTimeout(()=>showKey(data),isPhone()?260:30) } }
+function showKey(la){ const p=panel(L('Rekening aangemaakt','Account created'),`<div class="empty" style="padding:6px 0 14px"><div class="ei" style="color:var(--pos)">${ic('check',24)}</div><h4>${esc(la.name)}</h4><div>${L('Plak deze API-sleutel in de TWF Journal EA op dit MT5-account.','Paste this API key into the TWF Journal EA on this MT5 account.')}</div></div>
+   <div class="keyf"><input class="inp" value="${esc(la.api_key)}" readonly><button class="btn btn-p" data-cp>${ic('copy',16)} ${L('Kopieer','Copy')}</button></div>`,`<button class="btn btn-p" data-x2>${L('Klaar','Done')}</button>`);
+  p.querySelector('[data-cp]').onclick=()=>copyText(la.api_key); p.querySelector('[data-x2]').onclick=()=>p.close() }
+function editLive(la){ const p=panel(L('Rekening bewerken','Edit account'),liveForm(la),`<button class="btn btn-danger" data-del>${ic('trash',16)}</button><button class="btn btn-g" data-x2>${L('Annuleren','Cancel')}</button><button class="btn btn-p" data-ok>${L('Opslaan','Save')}</button>`);
+  p.querySelector('[data-x2]').onclick=()=>p.close();
+  p.querySelector('[data-ok]').onclick=async()=>{ const {error}=await sb.from('live_accounts').update(liveRead(p)).eq('id',la.id).eq('user_id',ME.id); if(error){ toast(L('Opslaan mislukt','Save failed'),error.message,'bad'); return } await fetchLive(); p.close(); render(); toast(L('Opgeslagen','Saved'),'','ok',1500) };
+  p.querySelector('[data-del]').onclick=async()=>{ const n=D.trades.filter(t=>t.account===la.id).length;
+    if(!(await askConfirm(L(`Rekening "${la.name}" en de ${n} trades erop verwijderen? De API-sleutel werkt daarna niet meer.`,`Delete account "${la.name}" and its ${n} trades? The API key stops working.`),L('Verwijderen','Delete'),true,L('VERWIJDEREN','DELETE')))) return;
+    for(const t of ['trades','payouts','adjustments']) await sb.from(t).delete().eq('user_id',ME.id).eq('account_id',la.id);
+    const {error}=await sb.from('live_accounts').delete().eq('id',la.id).eq('user_id',ME.id); if(error){ toast(L('Verwijderen mislukt','Delete failed'),error.message,'bad'); return }
+    S.acct='live'; lsSet('twfj_acct','live'); await loadAll(); p.close(); render(); toast(L('Rekening verwijderd','Account deleted'),la.name,'ok') } }
 function renderAcctBtn(){ const A=acct(); $('#acctBtn').innerHTML=`<span class="ad ${A.kind}">${ic(A.kind==='live'?'plug':'chart',15)}</span><span class="an"><b>${esc(A.name)}</b><small>${esc(A.sub)}</small></span><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--ink3)"><path d="M6 9l6 6 6-6"/></svg>` }
 
 /* ---------------- render ---------------- */
@@ -1926,7 +1959,7 @@ function pgTrades(){
 }
 
 /* ---------- Trade-detail ---------- */
-const acctKey=()=>S.acct.startsWith('bt:')?S.acct:'live';
+const acctKey=()=>S.acct;
 function expandIds(ids){ const A=acct(); return [...ids].flatMap(id=>{ const t=A.trades.find(x=>String(x.id)===String(id)); return t&&t.layers?t.layers.map(l=>String(l.id)):[String(id)] }) }
 async function mergeSelected(){ const ids=[...new Set(expandIds(SEL.ids))]; if(ids.length<2) return; const key=acctKey();
   const old=D.groups.filter(g=>g.acct===key&&g.ids.some(i=>ids.includes(String(i)))); const planAll=ids.map(i=>(acct().raw||[]).find(t=>String(t.id)===i)).filter(Boolean).every(t=>t.hadPlan);
@@ -1935,10 +1968,10 @@ async function mergeSelected(){ const ids=[...new Set(expandIds(SEL.ids))]; if(i
   catch(e){ toast(L('Samenvoegen mislukt','Merge failed'),e.message||String(e),'bad') } }
 async function setPlan(ids,plan){ const A=acct(), key=acctKey();
   for(const id of ids){ const t=A.trades.find(x=>String(x.id)===String(id));
-    if(t&&t.gid){ const g=D.groups.find(x=>x.id===t.gid); if(g) await saveGroup({...g,plan}); if(key==='live') for(const l of t.layers) await sb.from('trades').update({had_plan:plan}).eq('id',l.id).eq('user_id',ME.id) }
-    else if(key==='live'){ await sb.from('trades').update({had_plan:plan}).eq('id',id).eq('user_id',ME.id) }
+    if(t&&t.gid){ const g=D.groups.find(x=>x.id===t.gid); if(g) await saveGroup({...g,plan}); if(key.startsWith('live')) for(const l of t.layers) await sb.from('trades').update({had_plan:plan}).eq('id',l.id).eq('user_id',ME.id) }
+    else if(key.startsWith('live')){ await sb.from('trades').update({had_plan:plan}).eq('id',id).eq('user_id',ME.id) }
     else { const g={id:'p'+String(id).replace(/\W/g,''),acct:key,ids:[String(id)],plan}; await saveGroup(g) } }
-  if(key==='live') await fetchTrades() }
+  if(key.startsWith('live')) await fetchTrades() }
 async function planSelected(plan){ const ids=[...SEL.ids]; if(!ids.length) return; try{ await setPlan(ids,plan); SEL.ids.clear(); render(); toast(L('Bijgewerkt','Updated'),plan?L('Aan plan gehouden','Plan followed'):L('Zonder plan','Without plan'),'ok',1800) }catch(e){ toast(L('Opslaan mislukt','Save failed'),e.message||String(e),'bad') } }
 function findTrade(id){ const A=acct(); return A.trades.find(t=>String(t.id)===String(id))||(A.raw||[]).find(t=>String(t.id)===String(id)) }
 function openTrade(id){ const t=findTrade(id); if(!t) return; const A=acct();
@@ -1987,7 +2020,7 @@ function openEditor(t){
   const body=`<div class="ed">
     <div class="field"><label>${L('Markt','Market')}</label><input class="inp" id="eP" list="ePl" value="${esc(t?t.pair:'')}" placeholder="XAUUSD" autocapitalize="characters" autocomplete="off"><datalist id="ePl">${pairs.map(p=>`<option value="${esc(p)}">`).join('')}</datalist></div>
     <div class="field"><label>${L('Richting','Direction')}</label><div class="dirseg"><button data-dir="long" class="long">${ic('arrowup',16)} Long</button><button data-dir="short" class="short">${ic('arrowdown',16)} Short</button></div></div>
-    <div class="two"><div class="field"><label>${L('Resultaat','Result')} (${esc(SETTINGS.currency)})</label><input class="inp big" id="eR" type="text" inputmode="decimal" value="${t?t.pnl:''}" placeholder="0,00"></div>
+    <div class="two"><div class="field"><label>${L('Resultaat','Result')} (${esc(acct().cur||SETTINGS.currency)})</label><input class="inp big" id="eR" type="text" inputmode="decimal" value="${t?t.pnl:''}" placeholder="0,00"></div>
     <div class="field"><label>R:R</label><input class="inp big" id="eRR" type="text" inputmode="decimal" value="${t&&t.rr!=null?t.rr:''}" placeholder="2.0"></div></div>
     <div class="two"><div class="field"><label>${L('Datum','Date')}</label><input class="inp" id="eD" type="date" value="${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}"></div>
     <div class="field"><label>${L('Tijd','Time')}</label><input class="inp" id="eT" type="time" value="${p2(d.getHours())}:${p2(d.getMinutes())}"></div></div>
@@ -2025,7 +2058,7 @@ function openEditor(t){
         const {error}=await sb.storage.from('trade-photos').upload(path,ph.file); if(error) throw new Error(L('Screenshot uploaden mislukt: ','Screenshot upload failed: ')+error.message); urls.push(sb.storage.from('trade-photos').getPublicUrl(path).data.publicUrl) }
       const row={ pair, dir:st.dir, pnl, rr:isNaN(rrv)?null:rrv, date:new Date(dOnly+'T'+tOnly).toISOString(), setup:q('#eS').value.trim()||(t&&t.mt5?'MT5 auto-sync':''), note:q('#eN').value.trim(), had_plan:st.plan, photo_url:urls.length>1?JSON.stringify(urls):(urls[0]||null) };
       if(t){ const {error}=await sb.from('trades').update(row).eq('id',t.id).eq('user_id',ME.id); if(error) throw error }
-      else { const {error}=await sb.from('trades').insert({...row,user_id:ME.id}).select().single(); if(error) throw error }
+      else { const {error}=await sb.from('trades').insert({...row,user_id:ME.id,account_id:acct().liveId||null}).select().single(); if(error) throw error }
       await fetchTrades(); p.close(); render(); toast(t?L('Opgeslagen','Saved'):L('Trade toegevoegd','Trade added'),pair+' · '+fmtM(pnl,undefined,{sign:1}),'ok');
     }catch(e){ toast(L('Opslaan mislukt','Save failed'),e.message||String(e),'bad') } finally{ st.busy=false; btn.disabled=false; btn.textContent=t?L('Opslaan','Save'):L('Toevoegen','Add') } };
   if(!t&&!isPhone()) setTimeout(()=>q('#eP').focus(),60);
@@ -2107,7 +2140,7 @@ function openMoney(kind,item){ const isPo=kind==='payout', d=item?new Date(item.
   q('[data-save]').onclick=async()=>{ const amount=parseFloat(String(q('#mA').value).replace(',','.')), dOnly=q('#mD').value, note=q('#mN').value.trim();
     if(isNaN(amount)||amount<=0||!dOnly){ toast(L('Bijna klaar','Almost there'),L('Vul een geldig bedrag en datum in.','Enter a valid amount and date.'),'bad'); return }
     const row={amount,date:new Date(dOnly+'T12:00:00').toISOString(),note}; if(!isPo) row.kind=q('#mK').value;
-    const r=item?await sb.from(tbl).update(row).eq('id',item.id).eq('user_id',ME.id):await sb.from(tbl).insert({...row,user_id:ME.id});
+    const r=item?await sb.from(tbl).update(row).eq('id',item.id).eq('user_id',ME.id):await sb.from(tbl).insert({...row,user_id:ME.id,account_id:acct().liveId||null});
     if(r.error){ toast(L('Opslaan mislukt','Save failed'),r.error.message,'bad'); return } isPo?await fetchPayouts():await fetchAdjs(); p.close(); render(); toast(L('Opgeslagen','Saved'),'', 'ok',1600) };
   if(q('[data-del]')) q('[data-del]').onclick=async()=>{ if(!(await askConfirm(L('Dit item verwijderen?','Delete this item?')))) return; const r=await sb.from(tbl).delete().eq('id',item.id).eq('user_id',ME.id); if(r.error){ toast(L('Verwijderen mislukt','Delete failed'),r.error.message,'bad'); return } isPo?await fetchPayouts():await fetchAdjs(); p.close(); render() } }
 
@@ -2130,16 +2163,16 @@ function pgDiscipline(){ const A=acct(), tr=A.trades, m=stats(tr,A), noPlan=tr.f
   </div>` }
 
 /* ---------- MT5 ---------- */
-function mt5Status(){ const mt=D.trades.filter(t=>t.mt5); if(!mt.length) return {k:'none',title:L('Nog niet gekoppeld','Not connected yet'),sub:L('Volg de stappen hieronder om MT5 te koppelen.','Follow the steps below to connect MT5.'),n:0};
+function mt5Status(){ const A0=acct(); const mt=(A0.raw||[]).filter(t=>t.mt5); if(!mt.length) return {k:'none',title:L('Nog niet gekoppeld','Not connected yet'),sub:L('Volg de stappen hieronder om MT5 te koppelen.','Follow the steps below to connect MT5.'),n:0};
   const last=mt.reduce((a,b)=>new Date(a.syncedAt)>new Date(b.syncedAt)?a:b), dt=new Date(last.syncedAt), h=(Date.now()-dt)/3600000;
   return {k:h<24?'live':'stale',title:h<24?L('Verbonden','Connected'):L('Niet recent gesynchroniseerd','Not synced recently'),sub:L('Laatste sync: ','Last sync: ')+relTime(dt),n:mt.length,last:dt} }
-function pgMt5(){ const st=mt5Status(), key=SETTINGS.apiKey;
+function pgMt5(){ const A=acct(); if(A.kind!=='live'){ S.acct='live'; return pgMt5() } const st=mt5Status(), key=A.apiKey;
   const mock=(title,rows)=>`<div class="mock"><div class="mt"><i></i><i></i><i></i><span style="margin-left:6px">${title}</span></div><div class="mb">${rows}</div></div>`;
-  return head(L('MT5-koppeling','MT5 connection'),L('Je live trades komen automatisch binnen via de TWF Journal EA. Backtest-trades gaan niet via MT5, die komen rechtstreeks uit TWF Backtest.','Your live trades come in automatically via the TWF Journal EA. Backtest trades do not use MT5, they come straight from TWF Backtest.'),'')+
+  return head(L('MT5-koppeling','MT5 connection')+` <span class="chip" style="vertical-align:middle">${esc(A.name)}</span>`,L('Je live trades komen automatisch binnen via de TWF Journal EA. Backtest-trades gaan niet via MT5, die komen rechtstreeks uit TWF Backtest.','Your live trades come in automatically via the TWF Journal EA. Backtest trades do not use MT5, they come straight from TWF Backtest.'),`<button class="btn btn-g" data-act="addlive">${ic('plus',16)} ${L('Live-rekening','Live account')}</button>`)+
   `<div class="jgrid">
    <div class="box c7"><div class="mt5st"><span class="dotb ${st.k}">${ic(st.k==='none'?'plug':st.k==='live'?'check':'clock',26)}</span><div style="flex:1;min-width:0"><h3>${st.k==='live'?'<span class="pulse"></span> ':''}${st.title}</h3><div class="muted" style="margin-top:4px">${st.sub}</div></div><button class="btn btn-g" data-act="mt5test">${ic('refresh',16)} ${L('Test verbinding','Test connection')}</button></div>
-     <div class="mgrid" style="margin-bottom:0"><div><small>${L('Gesynchroniseerd','Synced')}</small><b>${st.n} trades</b></div><div><small>${L('MT5-account','MT5 account')}</small><b>${esc(SETTINGS.login||'—')}</b></div><div><small>Server</small><b>${esc(SETTINGS.server||SETTINGS.broker||'—')}</b></div></div></div>
-   <div class="box c5"><div class="boxh"><h3>${ic('lock',16)} ${L('Jouw API-sleutel','Your API key')}</h3></div><p class="muted" style="margin:0 0 12px;font-size:13.5px;line-height:1.5">${L('Deze sleutel vul je in bij de EA in MT5. Deel hem met niemand.','You enter this key in the EA in MT5. Do not share it.')}</p>
+     <div class="mgrid" style="margin-bottom:0"><div><small>${L('Gesynchroniseerd','Synced')}</small><b>${st.n} trades</b></div><div><small>${L('MT5-account','MT5 account')}</small><b>${esc(A.login||'—')}</b></div><div><small>Server</small><b>${esc(A.server||'—')}</b></div></div></div>
+   <div class="box c5"><div class="boxh"><h3>${ic('lock',16)} ${L('API-sleutel','API key')} · ${esc(A.name)}</h3>${A.la?`<button class="btn btn-g" data-act="editlive" style="height:34px">${ic('edit',14)} ${L('Bewerken','Edit')}</button>`:''}</div><p class="muted" style="margin:0 0 12px;font-size:13.5px;line-height:1.5">${L('Deze sleutel vul je in bij de EA in MT5. Deel hem met niemand.','You enter this key in the EA in MT5. Do not share it.')}</p>
      ${key?`<div class="keyf"><input class="inp" id="apiK" type="password" value="${esc(key)}" readonly><button class="ib" data-act="keyshow" title="${L('Tonen','Show')}">${ic('eye',18)}</button><button class="btn btn-p" data-act="keycopy">${ic('copy',16)} ${L('Kopieer','Copy')}</button></div>`:`<div class="muted">${L('Nog geen sleutel. Die wordt aangemaakt zodra de database hem voor je account genereert. Neem contact op als dit zo blijft.','No key yet. It is created as soon as the database generates one for your account. Get in touch if this persists.')}</div>`}</div>
    <div class="box c12"><div class="boxh"><h3>${L('Zo koppel je MT5','How to connect MT5')}</h3><span class="chip">${L('± 3 minuten','± 3 minutes')}</span></div><div class="steps">
      <div class="step"><span class="sn">1</span><div><b>${L('Zet de EA in MT5','Put the EA in MT5')}</b><p>${L('Open MT5 → <code>Bestand</code> → <code>Open datamap</code> → map <code>MQL5</code> → <code>Experts</code>. Zet daar het bestand <code>TWFJournal.ex5</code> neer en klik in MT5 met rechts op <b>Expert Advisors</b> → <b>Vernieuwen</b>.','Open MT5 → <code>File</code> → <code>Open Data Folder</code> → folder <code>MQL5</code> → <code>Experts</code>. Put the file <code>TWFJournal.ex5</code> there and in MT5 right-click <b>Expert Advisors</b> → <b>Refresh</b>.')}</p>${mock('Navigator',`<div class="mrow">📁 Expert Advisors</div><div class="mrow hl">⚙️ TWFJournal</div>`)}</div></div>
@@ -2217,7 +2250,8 @@ function bindPage(m){
   on('payout',()=>openMoney('payout')); on('adj',()=>openMoney('adj'));
   on('mt5test',async e=>{ const b=e.currentTarget; b.disabled=true; await fetchTrades(); await fetchSettings(); b.disabled=false; const st=mt5Status(); render(); toast(st.k==='none'?L('Nog geen MT5-trades','No MT5 trades yet'):st.title,st.k==='none'?L('Sluit een trade in MT5 en probeer het opnieuw.','Close a trade in MT5 and try again.'):st.sub,st.k==='live'?'ok':st.k==='none'?'info':'bad') });
   on('keyshow',()=>{ const k=m.querySelector('#apiK'); k.type=k.type==='password'?'text':'password' });
-  on('keycopy',()=>copyText(SETTINGS.apiKey));
+  on('keycopy',()=>copyText(acct().apiKey));
+  on('editlive',()=>{ const A=acct(); if(A.la) editLive(A.la) }); on('addlive',()=>newLive());
   on('savefine',async()=>{ const en=m.querySelector('#bOn').classList.contains('on'), am=parseFloat(String(m.querySelector('#bAm').value).replace(',','.'))||0, gd=m.querySelector('#bGd').value.trim();
     const r=await sb.from('settings').update({boete_enabled:en,boete_bedrag:am,goed_doel:gd}).eq('user_id',ME.id); if(r.error){ toast(L('Opslaan mislukt','Save failed'),r.error.message,'bad'); return }
     Object.assign(SETTINGS,{boeteEnabled:en,boeteBedrag:am,goedDoel:gd}); render(); toast(L('Opgeslagen','Saved'),'','ok',1600) });
